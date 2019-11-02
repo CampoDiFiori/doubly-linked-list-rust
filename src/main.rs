@@ -33,9 +33,18 @@ impl<T> Node<T> {
     pub fn set_prev(&mut self, prev: Option<NodePtr<T>>)  {
         self.prev = prev;
     }
+
+    pub fn get_next(&self) -> Option<NodePtr<T>> {
+        if let Some(next_node) = &self.next {
+            return Some(next_node.clone())
+        }
+        None
+    }
 }
 
-impl<T> DoublyLinkedList<T> {
+impl<T> DoublyLinkedList<T> 
+where T: Copy, T: PartialEq
+{
     pub fn new() -> DoublyLinkedList<T>{
         return DoublyLinkedList {
             first: None,
@@ -56,6 +65,27 @@ impl<T> DoublyLinkedList<T> {
         self.first = Some(node_ptr.clone());
         self.last = Some(node_ptr.clone());
         self.curr_iter = Some(node_ptr.clone());
+    } 
+
+    fn find(&self, value: T) -> Option<NodePtr<T>>{
+        let mut next_node_option = None;
+        if let Some(first_node) = &self.first {
+            next_node_option = Some(first_node.clone());
+        }
+        while let Some(next_node) = next_node_option {
+            if next_node.borrow().value == value {
+                return Some(next_node.clone())
+            }
+            next_node_option = next_node.borrow().get_next();
+        }
+        None
+    }
+
+    pub fn contains(&self, value: T) -> bool {
+        match self.find(value) {
+            Some(_) => true,
+            None => false,
+        }
     } 
 }
 
@@ -96,4 +126,22 @@ fn insert_test() {
     }
 
     assert_eq!(vector_from_range, vector_from_range)
+}
+
+#[test]
+fn contains_test() {
+    let mut list: DoublyLinkedList<i8> = DoublyLinkedList::new();
+
+    for i in 1..20 {
+        list.insert(i)
+    }
+
+    assert_eq!(list.contains(3), true);
+    assert_eq!(list.contains(19), true);
+    assert_ne!(list.contains(20), true);
+    assert_eq!(list.contains(21), false);
+}
+
+fn main () {
+    
 }
